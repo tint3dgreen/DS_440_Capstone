@@ -123,7 +123,7 @@ for dir in os.listdir(parent):
             final_image = add_pad(croppedImage)
 
             new_name = str(str(count)+".jpg")
-            folder_name = '../../volume/data/interim/Cancer_Set/JPEGImages'
+            folder_name = '../../volume/data/interim/VOCdevkit2007/JPEGImages'
             print("Writing: " + os.path.join(folder_name,new_name))
             cv2.imwrite(os.path.join(folder_name,new_name),img*3)
             count = count+1
