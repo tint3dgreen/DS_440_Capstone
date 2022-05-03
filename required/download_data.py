@@ -14,14 +14,14 @@ r = requests.get(url)
 json = r.json()
 i = 1
 for item in json:
-	path = "/storage/home/cma5750/DS_440/DS_440_Capstone/volume/data/raw/Images/data"+str(i)+".zip"
+	path = "../volume/data/raw/Images/data"+str(i)+".zip"
 	url = base + "getImage?SeriesInstanceUID=" + item["SeriesInstanceUID"]
 	r = requests.get(url)
 	with open(path, "wb") as fd:
 		for chunk in r.iter_content(chunk_size=128):
 			fd.write(chunk)
 	print(item["SeriesInstanceUID"])
-	exdir = "/storage/home/cma5750/DS_440/DS_440_Capstone/volume/data/raw/Images/"+str(i)+"/"
+	exdir = "../volume/data/raw/Images/"+str(i)+"/"
 	os.system("unzip "+path+ " -d "+ exdir)
 	i = i+1
 

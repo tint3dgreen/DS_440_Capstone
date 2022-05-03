@@ -81,52 +81,55 @@ def add_pad(image, new_height=512, new_width=512):
     
     return final_image
 
-directory = '/storage/home/ppk5143/DS440/project/volume/data/raw/'
+parent = '../../volume/data/raw/Images'
+count = 0
+for dir in os.listdir(parent):
+    for fn in os.listdir(os.path.join(parent,dir)):
+        link = os.path.join(parent,dir,fn)
+        if fn.endswith(".dcm"):
+            print("working on " + link)
+            ds = pydicom.read_file(link)
+            remove_noise(link)
+            iskemiMaskedImg = remove_noise(link)
 
 
-for fn in os.listdir(directory):
-    link = directory + fn
-    if fn.endswith(".dcm"):
-        ds = pydicom.read_file(link)
-        remove_noise(link)
-        iskemiMaskedImg = remove_noise(link)
+            img=numpy.uint8(iskemiMaskedImg)
+            contours, hier =cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            mask=numpy.zeros(img.shape, numpy.uint8)
+
+            # find the biggest contour (c) by the area
+            c = max(contours, key = cv2.contourArea)
+
+            (x,y),(MA,ma),angle = cv2.fitEllipse(c)
+
+            cv2.ellipse(img, ((x,y), (MA,ma), angle), color=(0, 255, 0), thickness=2)
+
+            rmajor = max(MA,ma)/2
+            if angle > 90:
+                angle -= 90
+            else:
+                angle += 96
+            xtop = x + math.cos(math.radians(angle))*rmajor
+            ytop = y + math.sin(math.radians(angle))*rmajor
+            xbot = x + math.cos(math.radians(angle+180))*rmajor
+            ybot = y + math.sin(math.radians(angle+180))*rmajor
+            cv2.line(img, (int(xtop),int(ytop)), (int(xbot),int(ybot)), (0, 255, 0), 3)
+
+            M = cv2.getRotationMatrix2D((x, y), angle-90, 1)  #transformation matrix
+            img = cv2.warpAffine(img, M, (img.shape[1], img.shape[0]), cv2.INTER_CUBIC)
+
+            croppedImage = crop_image(img)
+
+            final_image = add_pad(croppedImage)
+
+            new_name = str(str(count)+".jpg")
+            folder_name = '../../volume/data/interim/Cancer_Set/JPEGImages'
+            print("Writing: " + os.path.join(folder_name,new_name))
+            cv2.imwrite(os.path.join(folder_name,new_name),img*3)
+            count = count+1
 
 
-        img=numpy.uint8(iskemiMaskedImg)
-        contours, hier =cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        mask=numpy.zeros(img.shape, numpy.uint8)
-
-        # find the biggest contour (c) by the area
-        c = max(contours, key = cv2.contourArea)
-
-        (x,y),(MA,ma),angle = cv2.fitEllipse(c)
-
-        cv2.ellipse(img, ((x,y), (MA,ma), angle), color=(0, 255, 0), thickness=2)
-
-        rmajor = max(MA,ma)/2
-        if angle > 90:
-            angle -= 90
-        else:
-            angle += 96
-        xtop = x + math.cos(math.radians(angle))*rmajor
-        ytop = y + math.sin(math.radians(angle))*rmajor
-        xbot = x + math.cos(math.radians(angle+180))*rmajor
-        ybot = y + math.sin(math.radians(angle+180))*rmajor
-        cv2.line(img, (int(xtop),int(ytop)), (int(xbot),int(ybot)), (0, 255, 0), 3)
-
-        M = cv2.getRotationMatrix2D((x, y), angle-90, 1)  #transformation matrix
-        img = cv2.warpAffine(img, M, (img.shape[1], img.shape[0]), cv2.INTER_CUBIC)
-
-        croppedImage = crop_image(img)
-
-        final_image = add_pad(croppedImage)
-
-        new_name = str("processed_"+str(fn)+".jpg")
-        folder_name = '/storage/home/ppk5143/DS440/project/volume/data/interim/'
-        cv2.imwrite(os.path.join(folder_name,new_name),img*3)
-    
-        
-        continue
+            continue
 
 
 
