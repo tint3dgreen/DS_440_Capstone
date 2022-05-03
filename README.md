@@ -1,6 +1,6 @@
 # DS_440_Capstone
 
-##Instructions
+##Instructions\n
 First, run download_data.py in /required to donwload the data
 
 Then run the preprocessing with Preproc_Script.py in src/features
