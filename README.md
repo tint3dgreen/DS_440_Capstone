@@ -1,6 +1,6 @@
 # DS_440_Capstone
 
-#Instructions
+Instructions:
 
 First, run download_data.py in /required to donwload the data
 
